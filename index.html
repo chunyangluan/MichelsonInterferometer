@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,44 +11,123 @@
     id="michelsonExperiment"
     class="experiment-page"
     data-nusep-experiment="michelson-interferometer"
-    data-nusep-version="0.1.0"
+    data-nusep-version="0.2.0"
   >
     <header class="page-header">
-      <p class="eyebrow">NuSEP Virtual Physics Experiment</p>
-      <h1>Michelson Interferometer - Equal Inclination Interference</h1>
-      <p class="intro">
-        通过调节入射光波长和等效空气膜厚度，观察迈克尔逊干涉仪在等倾干涉条件下形成的同心干涉环。
-      </p>
+      <div>
+        <p class="eyebrow">NuSEP Virtual Physics Experiment</p>
+        <h1>Michelson Interferometer - Equal Inclination Interference</h1>
+        <p class="intro">
+          调节波长、空气膜厚度、焦距和条纹可见度，观察迈克尔逊干涉仪在等倾干涉条件下形成的同心干涉环，并记录关键物理量。
+        </p>
+      </div>
+      <div class="status-strip" aria-label="experiment capabilities">
+        <span>GitHub Pages</span>
+        <span>NuSEP ready</span>
+        <span>Interactive canvas</span>
+      </div>
     </header>
 
-    <section class="experiment-layout" aria-label="Michelson interferometer virtual experiment">
-      <div class="canvas-stage">
-        <canvas id="interferogram" width="500" height="500"></canvas>
-      </div>
+    <section class="workspace" aria-label="Michelson interferometer virtual laboratory">
+      <section class="visual-panel" aria-label="Interferogram display">
+        <div class="panel-heading">
+          <div>
+            <h2>干涉图样</h2>
+            <p>移动或点击图样可读取该观察方向对应的半径、倾角、光程差和归一化强度。</p>
+          </div>
+          <div class="canvas-badge" id="displayModeBadge">彩色单色光</div>
+        </div>
+
+        <div class="canvas-shell">
+          <canvas id="interferogram" width="500" height="500"></canvas>
+        </div>
+
+        <div class="sample-panel" aria-label="Sample point values">
+          <div>
+            <span>采样半径 r</span>
+            <strong><span id="sampleRadiusValue">125.00</span> mm</strong>
+          </div>
+          <div>
+            <span>倾角 θ</span>
+            <strong><span id="sampleThetaValue">32.01</span>°</strong>
+          </div>
+          <div>
+            <span>光程差 Δ</span>
+            <strong><span id="sampleOpdValue">0.004243</span> mm</strong>
+          </div>
+          <div>
+            <span>强度 I</span>
+            <strong><span id="sampleIntensityValue">0.500</span></strong>
+          </div>
+        </div>
+      </section>
 
       <aside class="control-panel" aria-label="Experiment controls">
-        <div class="control-group">
-          <label for="wavelength">Wavelength: <span id="wavelengthValue">550</span> nm</label>
-          <input
-            id="wavelength"
-            type="range"
-            min="400"
-            max="700"
-            value="550"
-            step="1"
-          >
+        <div class="panel-heading compact">
+          <h2>实验控制</h2>
+          <button class="text-button" id="resetButton" type="button">复位</button>
         </div>
 
         <div class="control-group">
-          <label for="filmThickness">Air Film Thickness: <span id="filmThicknessValue">0.0025</span> mm</label>
-          <input
-            id="filmThickness"
-            type="range"
-            min="0"
-            max="0.005"
-            value="0.0025"
-            step="0.00001"
-          >
+          <label for="wavelength">波长 λ：<output id="wavelengthValue">550</output> nm</label>
+          <div class="dual-control">
+            <input id="wavelength" type="range" min="400" max="700" value="550" step="1">
+            <input id="wavelengthInput" type="number" min="400" max="700" value="550" step="1" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="filmThickness">空气膜厚度 d：<output id="filmThicknessValue">0.00250</output> mm</label>
+          <div class="dual-control">
+            <input id="filmThickness" type="range" min="0" max="0.005" value="0.0025" step="0.00001">
+            <input id="filmThicknessInput" type="number" min="0" max="0.005" value="0.0025" step="0.00001" inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="focalLength">等效焦距 f：<output id="focalLengthSliderValue">200</output> mm</label>
+          <div class="dual-control">
+            <input id="focalLength" type="range" min="80" max="500" value="200" step="1">
+            <input id="focalLengthInput" type="number" min="80" max="500" value="200" step="1" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="visibility">条纹可见度 V：<output id="visibilityValue">100</output>%</label>
+          <div class="dual-control">
+            <input id="visibility" type="range" min="0" max="100" value="100" step="1">
+            <input id="visibilityInput" type="number" min="0" max="100" value="100" step="1" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="segmented-control" aria-label="Display mode">
+          <label>
+            <input type="radio" name="displayMode" value="color" checked>
+            <span>波长着色</span>
+          </label>
+          <label>
+            <input type="radio" name="displayMode" value="gray">
+            <span>灰度强度</span>
+          </label>
+        </div>
+
+        <label class="checkbox-row">
+          <input id="showGuides" type="checkbox" checked>
+          <span>显示中心线、采样点与等半径参考环</span>
+        </label>
+
+        <div class="button-grid">
+          <button id="animationButton" type="button">扫描膜厚</button>
+          <button id="recordButton" type="button">记录数据</button>
+          <button id="exportImageButton" type="button">导出图像</button>
+          <button id="exportCsvButton" type="button">导出 CSV</button>
+        </div>
+
+        <div class="preset-row" aria-label="Parameter presets">
+          <button type="button" data-preset data-wavelength="450" data-thickness="0.0018" data-focal="180" data-visibility="100">蓝光</button>
+          <button type="button" data-preset data-wavelength="550" data-thickness="0.0025" data-focal="200" data-visibility="100">绿光</button>
+          <button type="button" data-preset data-wavelength="633" data-thickness="0.0032" data-focal="240" data-visibility="92">红光</button>
+          <button type="button" data-preset data-wavelength="589" data-thickness="0.0044" data-focal="150" data-visibility="85">高阶环</button>
         </div>
 
         <div class="live-readout" aria-label="Live simulation values">
@@ -64,36 +143,38 @@
             </div>
             <div>
               <dt>I(center)</dt>
-              <dd><span id="centerIntensityValue">0.00</span></dd>
+              <dd><span id="centerIntensityValue">0.000</span></dd>
             </div>
             <div>
               <dt>θ(edge)</dt>
               <dd><span id="thetaEdgeValue">51.34</span>°</dd>
+            </div>
+            <div>
+              <dt>可见环数估计</dt>
+              <dd><span id="ringCountValue">3.41</span></dd>
             </div>
           </dl>
         </div>
       </aside>
     </section>
 
-    <section class="content-grid" aria-label="Michelson interferometer theory and model">
+    <section class="content-grid" aria-label="Theory, model, and workflow">
       <article class="info-panel">
         <h2>1. 原理描述</h2>
         <p>
-          迈克尔逊干涉仪将同一束光分成两路，经两臂反射后重新叠加。若两束光在观察方向上的光程差满足相长或相消条件，
-          屏幕上会出现亮暗相间的干涉条纹。
+          迈克尔逊干涉仪将同一束相干光分成两路。两束光分别经两臂反射后重新叠加，其相位差由两路光的光程差决定。
         </p>
         <p>
-          等倾干涉中，干涉强度只与出射光线的倾角 θ 有关。观察屏上到中心距离相同的像素对应相同 θ，
-          因此形成以中心为圆心的同心圆环。
+          等倾干涉中，观察方向相同的光线具有相同倾角 θ，因此屏幕上所有同半径点具有相同光程差，形成同心亮暗环。
         </p>
       </article>
 
       <article class="info-panel formula-panel">
         <h2>2. 物理公式与当前计算</h2>
         <div class="formula-block">
-          <p><strong>角度映射：</strong> θ = atan(r / f), f = <span id="focalLengthValue">200</span> mm</p>
+          <p><strong>角度映射：</strong> θ = atan(r / f)，f = <span id="focalLengthValue">200</span> mm</p>
           <p><strong>光程差：</strong> Δ = 2d cosθ</p>
-          <p><strong>归一化强度：</strong> I = [1 + cos(2πΔ / λ)] / 2</p>
+          <p><strong>归一化强度：</strong> I = [1 + V cos(2πΔ / λ)] / 2</p>
         </div>
         <dl class="formula-values">
           <div>
@@ -110,7 +191,7 @@
           </div>
           <div>
             <dt>边缘归一化强度 Ie</dt>
-            <dd><span id="edgeIntensityValue">0.00</span></dd>
+            <dd><span id="edgeIntensityValue">0.000</span></dd>
           </div>
         </dl>
       </article>
@@ -126,31 +207,61 @@
           <text x="28" y="54" class="diagram-label">Light source</text>
           <circle cx="80" cy="110" r="18" class="diagram-source"></circle>
           <line x1="98" y1="110" x2="238" y2="110" class="diagram-ray"></line>
-
           <rect x="240" y="78" width="12" height="88" transform="rotate(45 246 122)" class="diagram-splitter"></rect>
           <text x="214" y="58" class="diagram-label">Beam splitter</text>
-
           <line x1="252" y1="110" x2="410" y2="110" class="diagram-ray"></line>
           <rect x="416" y="78" width="14" height="64" class="diagram-mirror"></rect>
           <text x="405" y="62" class="diagram-label">M1</text>
-
           <line x1="246" y1="116" x2="246" y2="214" class="diagram-ray"></line>
           <rect x="214" y="220" width="64" height="14" class="diagram-mirror"></rect>
           <text x="284" y="238" class="diagram-label">M2</text>
-
           <line x1="246" y1="122" x2="246" y2="52" class="diagram-ray diagram-return"></line>
           <line x1="246" y1="122" x2="490" y2="198" class="diagram-ray diagram-return"></line>
           <rect x="494" y="160" width="18" height="78" class="diagram-screen"></rect>
           <text x="452" y="252" class="diagram-label">Observation plane</text>
-
           <path d="M 360 170 Q 420 156 482 184" class="diagram-angle"></path>
           <text x="374" y="158" class="diagram-label">θ</text>
           <text x="318" y="210" class="diagram-note">Equal θ → same intensity ring</text>
         </svg>
         <p>
-          在本仿真中，画布中心代表 θ = 0 的观察方向；离中心越远，r 越大，θ = atan(r/f) 越大。
-          对同一半径上的所有像素，光程差 Δ 相同，因此显示为一圈亮暗相间的等倾干涉环。
+          本模型假设空气折射率 n≈1，画布坐标 r 以 mm 表示观察面径向距离。改变 f 会改变 r 到 θ 的映射，从而改变条纹间距。
         </p>
+      </article>
+
+      <article class="info-panel workflow-panel">
+        <h2>4. 实验任务</h2>
+        <ol class="workflow-list">
+          <li>固定 d，改变 λ，比较同一半径处强度的变化。</li>
+          <li>固定 λ，扫描 d，观察中心亮暗交替。</li>
+          <li>改变 f，判断环纹变密或变疏。</li>
+          <li>记录三组参数，并导出 CSV 用于实验报告。</li>
+        </ol>
+      </article>
+
+      <article class="info-panel data-panel">
+        <div class="panel-heading compact">
+          <h2>5. 数据记录</h2>
+          <button class="text-button" id="clearRecordsButton" type="button">清空</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>λ/nm</th>
+                <th>d/mm</th>
+                <th>f/mm</th>
+                <th>I(center)</th>
+                <th>I(sample)</th>
+              </tr>
+            </thead>
+            <tbody id="measurementBody">
+              <tr id="emptyRecordRow">
+                <td colspan="6">暂无记录</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </article>
     </section>
   </main>
