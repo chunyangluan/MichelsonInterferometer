@@ -116,7 +116,8 @@ p + p {
 
 .visual-panel,
 .control-panel,
-.info-panel {
+.info-panel,
+.teacher-card {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -379,6 +380,48 @@ dd {
   font-weight: 700;
 }
 
+.teacher-board {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.experiment-page:not(.teacher-mode-enabled) .teacher-board,
+.experiment-page:not(.teacher-mode-enabled) .quiz-panel {
+  display: none;
+}
+
+.teacher-card {
+  padding: 20px;
+}
+
+.teacher-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.teacher-readout {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.teacher-readout div {
+  display: grid;
+  gap: 4px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.misconception-card {
+  border-left: 5px solid var(--amber);
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -401,6 +444,11 @@ dd {
 
 .data-panel {
   grid-column: span 4;
+}
+
+.quiz-panel,
+.report-panel {
+  grid-column: span 3;
 }
 
 .formula-block {
@@ -490,6 +538,64 @@ dd {
   line-height: 1.65;
 }
 
+.quiz-question {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f7f9fc;
+}
+
+.quiz-question legend {
+  padding: 0 4px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.quiz-question label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.quiz-feedback,
+.copy-status {
+  min-height: 24px;
+  color: var(--teal-dark);
+  font-weight: 700;
+}
+
+.mini-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.report-label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 12px;
+  color: var(--ink);
+  background: #f9fbfd;
+  border: 1px solid #bfc8d6;
+  border-radius: 8px;
+  line-height: 1.55;
+}
+
+textarea + textarea {
+  margin-top: 12px;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -542,11 +648,17 @@ td {
     grid-template-columns: 1fr 1fr;
   }
 
+  .teacher-board {
+    grid-template-columns: 1fr;
+  }
+
   .info-panel:nth-child(1),
   .info-panel:nth-child(2),
   .info-panel:nth-child(3),
   .workflow-panel,
-  .data-panel {
+  .data-panel,
+  .quiz-panel,
+  .report-panel {
     grid-column: span 1;
   }
 
@@ -578,6 +690,10 @@ td {
 
   .data-panel {
     grid-column: span 1;
+  }
+
+  .mini-actions {
+    justify-content: start;
   }
 
   .dual-control {

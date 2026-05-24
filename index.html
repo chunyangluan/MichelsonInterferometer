@@ -11,20 +11,21 @@
     id="michelsonExperiment"
     class="experiment-page"
     data-nusep-experiment="michelson-interferometer"
-    data-nusep-version="0.2.0"
+    data-nusep-version="0.3.0"
   >
     <header class="page-header">
       <div>
         <p class="eyebrow">NuSEP Virtual Physics Experiment</p>
         <h1>Michelson Interferometer - Equal Inclination Interference</h1>
         <p class="intro">
-          调节波长、空气膜厚度、焦距和条纹可见度，观察迈克尔逊干涉仪在等倾干涉条件下形成的同心干涉环，并记录关键物理量。
+          调节波长、空气膜厚度、焦距和条纹可见度，观察迈克尔逊干涉仪在等倾干涉条件下形成的同心干涉环，并完成预测、验证和实验报告。
         </p>
       </div>
       <div class="status-strip" aria-label="experiment capabilities">
         <span>GitHub Pages</span>
         <span>NuSEP ready</span>
         <span>Interactive canvas</span>
+        <span>Teacher tools</span>
       </div>
     </header>
 
@@ -116,6 +117,11 @@
           <span>显示中心线、采样点与等半径参考环</span>
         </label>
 
+        <label class="checkbox-row">
+          <input id="teacherMode" type="checkbox" checked>
+          <span>显示教师提示、误区提醒与课堂问题</span>
+        </label>
+
         <div class="button-grid">
           <button id="animationButton" type="button">扫描膜厚</button>
           <button id="recordButton" type="button">记录数据</button>
@@ -153,9 +159,51 @@
               <dt>可见环数估计</dt>
               <dd><span id="ringCountValue">3.41</span></dd>
             </div>
+            <div>
+              <dt>中心状态</dt>
+              <dd><span id="centerStateValue">接近暗纹</span></dd>
+            </div>
+            <div>
+              <dt>中心亮暗周期 Δd</dt>
+              <dd><span id="mirrorStepValue">275.0</span> nm</dd>
+            </div>
           </dl>
         </div>
       </aside>
+    </section>
+
+    <section class="teacher-board" aria-label="Teacher guided physics board">
+      <article class="teacher-card">
+        <h2>课堂目标</h2>
+        <ul>
+          <li>能解释为什么等倾干涉形成同心圆环。</li>
+          <li>能用 Δ = 2d cosθ 判断中心亮暗变化。</li>
+          <li>能用 I = [1 + V cos(2πΔ/λ)] / 2 解释可见度对条纹对比度的影响。</li>
+        </ul>
+      </article>
+      <article class="teacher-card">
+        <h2>当前物理判断</h2>
+        <dl class="teacher-readout">
+          <div>
+            <dt>中心相位位置</dt>
+            <dd><span id="phasePositionValue">0.09</span> 周期</dd>
+          </div>
+          <div>
+            <dt>最接近的亮纹级次</dt>
+            <dd>m = <span id="nearestBrightOrderValue">9</span></dd>
+          </div>
+          <div>
+            <dt>定性预测</dt>
+            <dd><span id="predictionSummaryValue">增大波长会使条纹变疏。</span></dd>
+          </div>
+        </dl>
+      </article>
+      <article class="teacher-card misconception-card">
+        <h2>常见误区提醒</h2>
+        <p id="misconceptionValue">
+          不能把屏幕半径 r 直接当成倾角 θ；本实验中 θ = atan(r/f)，焦距改变会改变同一像素对应的观察方向。
+        </p>
+      </article>
     </section>
 
     <section class="content-grid" aria-label="Theory, model, and workflow">
@@ -262,6 +310,47 @@
             </tbody>
           </table>
         </div>
+      </article>
+
+      <article class="info-panel quiz-panel">
+        <div class="panel-heading compact">
+          <h2>6. 课堂判断题</h2>
+          <button class="text-button" id="checkQuizButton" type="button">检查答案</button>
+        </div>
+        <fieldset class="quiz-question" data-question="wavelength">
+          <legend>若只增大波长 λ，条纹间距通常会怎样变化？</legend>
+          <label><input type="radio" name="q-wavelength" value="dense"> 变密，可见环数增加</label>
+          <label><input type="radio" name="q-wavelength" value="sparse"> 变疏，可见环数减少</label>
+          <label><input type="radio" name="q-wavelength" value="unchanged"> 不变，因为 d 没变</label>
+        </fieldset>
+        <fieldset class="quiz-question" data-question="center">
+          <legend>中心亮暗主要由什么决定？</legend>
+          <label><input type="radio" name="q-center" value="canvas"> 画布中心的像素颜色</label>
+          <label><input type="radio" name="q-center" value="phase"> 2d 与 λ 决定的相位关系</label>
+          <label><input type="radio" name="q-center" value="focal"> 只由焦距 f 决定</label>
+        </fieldset>
+        <fieldset class="quiz-question" data-question="visibility">
+          <legend>降低条纹可见度 V，图样最明显的变化是什么？</legend>
+          <label><input type="radio" name="q-visibility" value="contrast"> 亮暗对比度降低</label>
+          <label><input type="radio" name="q-visibility" value="radius"> 圆环半径必然变大</label>
+          <label><input type="radio" name="q-visibility" value="wavelength"> 波长自动变短</label>
+        </fieldset>
+        <p class="quiz-feedback" id="quizFeedback">选择答案后点击检查。</p>
+      </article>
+
+      <article class="info-panel report-panel">
+        <div class="panel-heading compact">
+          <h2>7. 实验报告草稿</h2>
+          <div class="mini-actions">
+            <button class="text-button" id="generateReportButton" type="button">生成</button>
+            <button class="text-button" id="copyReportButton" type="button">复制</button>
+            <button class="text-button" id="downloadReportButton" type="button">下载</button>
+          </div>
+        </div>
+        <label class="report-label" for="observationNotes">课堂观察与结论</label>
+        <textarea id="observationNotes" rows="4" placeholder="例如：增大波长后，同一画面内可见环数减少，说明 λ 增大使相位变化变慢。"></textarea>
+        <textarea id="reportOutput" rows="9" readonly placeholder="点击“生成”后，这里会形成可复制的实验报告摘要。"></textarea>
+        <p class="copy-status" id="copyStatus"></p>
       </article>
     </section>
   </main>

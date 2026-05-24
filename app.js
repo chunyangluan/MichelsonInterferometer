@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const STORAGE_KEY = "nusep.michelson.parameters.v2";
+  const STORAGE_KEY = "nusep.michelson.parameters.v3";
 
   const DEFAULT_CONFIG = {
     rootId: "michelsonExperiment",
@@ -15,6 +15,7 @@
     visibility: 1,
     displayMode: "color",
     showGuides: true,
+    teacherMode: true,
     sampleX: 335,
     sampleY: 205
   };
@@ -53,6 +54,11 @@
       this.exportCsv = this.exportCsv.bind(this);
       this.exportImage = this.exportImage.bind(this);
       this.applyPreset = this.applyPreset.bind(this);
+      this.handleTeacherModeToggle = this.handleTeacherModeToggle.bind(this);
+      this.checkQuiz = this.checkQuiz.bind(this);
+      this.generateReport = this.generateReport.bind(this);
+      this.copyReport = this.copyReport.bind(this);
+      this.downloadReport = this.downloadReport.bind(this);
     }
 
     init() {
@@ -96,12 +102,21 @@
         visibilityValue: document.getElementById("visibilityValue"),
         displayModeInputs: Array.from(document.querySelectorAll("input[name='displayMode']")),
         showGuides: document.getElementById("showGuides"),
+        teacherMode: document.getElementById("teacherMode"),
         resetButton: document.getElementById("resetButton"),
         animationButton: document.getElementById("animationButton"),
         recordButton: document.getElementById("recordButton"),
         exportImageButton: document.getElementById("exportImageButton"),
         exportCsvButton: document.getElementById("exportCsvButton"),
         clearRecordsButton: document.getElementById("clearRecordsButton"),
+        checkQuizButton: document.getElementById("checkQuizButton"),
+        quizFeedback: document.getElementById("quizFeedback"),
+        observationNotes: document.getElementById("observationNotes"),
+        reportOutput: document.getElementById("reportOutput"),
+        generateReportButton: document.getElementById("generateReportButton"),
+        copyReportButton: document.getElementById("copyReportButton"),
+        downloadReportButton: document.getElementById("downloadReportButton"),
+        copyStatus: document.getElementById("copyStatus"),
         presetButtons: Array.from(document.querySelectorAll("[data-preset]")),
         displayModeBadge: document.getElementById("displayModeBadge"),
         measurementBody: document.getElementById("measurementBody"),
@@ -117,6 +132,12 @@
           fringeOrderCenter: document.getElementById("fringeOrderCenterValue"),
           edgeIntensity: document.getElementById("edgeIntensityValue"),
           ringCount: document.getElementById("ringCountValue"),
+          centerState: document.getElementById("centerStateValue"),
+          mirrorStep: document.getElementById("mirrorStepValue"),
+          phasePosition: document.getElementById("phasePositionValue"),
+          nearestBrightOrder: document.getElementById("nearestBrightOrderValue"),
+          predictionSummary: document.getElementById("predictionSummaryValue"),
+          misconception: document.getElementById("misconceptionValue"),
           sampleRadius: document.getElementById("sampleRadiusValue"),
           sampleTheta: document.getElementById("sampleThetaValue"),
           sampleOpd: document.getElementById("sampleOpdValue"),
@@ -136,6 +157,7 @@
         ["film thickness input", this.elements.filmThicknessInput],
         ["focal length range", this.elements.focalLengthRange],
         ["visibility range", this.elements.visibilityRange],
+        ["teacher mode", this.elements.teacherMode],
         ["measurement table", this.elements.measurementBody]
       ];
 
@@ -174,6 +196,7 @@
         input.addEventListener("change", this.handleDisplayModeChange);
       });
       this.elements.showGuides.addEventListener("change", this.handleGuideToggle);
+      this.elements.teacherMode.addEventListener("change", this.handleTeacherModeToggle);
       this.canvas.addEventListener("pointermove", this.handleCanvasPointer);
       this.canvas.addEventListener("pointerdown", this.handleCanvasPointer);
       this.elements.resetButton.addEventListener("click", this.reset);
@@ -182,6 +205,10 @@
       this.elements.clearRecordsButton.addEventListener("click", this.clearRecords);
       this.elements.exportCsvButton.addEventListener("click", this.exportCsv);
       this.elements.exportImageButton.addEventListener("click", this.exportImage);
+      this.elements.checkQuizButton.addEventListener("click", this.checkQuiz);
+      this.elements.generateReportButton.addEventListener("click", this.generateReport);
+      this.elements.copyReportButton.addEventListener("click", this.copyReport);
+      this.elements.downloadReportButton.addEventListener("click", this.downloadReport);
       this.elements.presetButtons.forEach((button) => {
         button.addEventListener("click", this.applyPreset);
       });
@@ -200,6 +227,7 @@
         input.removeEventListener("change", this.handleDisplayModeChange);
       });
       this.elements.showGuides.removeEventListener("change", this.handleGuideToggle);
+      this.elements.teacherMode.removeEventListener("change", this.handleTeacherModeToggle);
       this.canvas.removeEventListener("pointermove", this.handleCanvasPointer);
       this.canvas.removeEventListener("pointerdown", this.handleCanvasPointer);
       this.elements.resetButton.removeEventListener("click", this.reset);
@@ -208,6 +236,10 @@
       this.elements.clearRecordsButton.removeEventListener("click", this.clearRecords);
       this.elements.exportCsvButton.removeEventListener("click", this.exportCsv);
       this.elements.exportImageButton.removeEventListener("click", this.exportImage);
+      this.elements.checkQuizButton.removeEventListener("click", this.checkQuiz);
+      this.elements.generateReportButton.removeEventListener("click", this.generateReport);
+      this.elements.copyReportButton.removeEventListener("click", this.copyReport);
+      this.elements.downloadReportButton.removeEventListener("click", this.downloadReport);
       this.elements.presetButtons.forEach((button) => {
         button.removeEventListener("click", this.applyPreset);
       });
@@ -248,6 +280,12 @@
     handleGuideToggle(event) {
       this.state.showGuides = event.currentTarget.checked;
       this.saveState();
+      this.requestDraw();
+    }
+
+    handleTeacherModeToggle(event) {
+      this.state.teacherMode = event.currentTarget.checked;
+      this.syncControls();
       this.requestDraw();
     }
 
@@ -346,6 +384,8 @@
       this.elements.focalLengthSliderValue.textContent = this.state.focalLengthMm.toFixed(0);
       this.elements.visibilityValue.textContent = (this.state.visibility * 100).toFixed(0);
       this.elements.showGuides.checked = this.state.showGuides;
+      this.elements.teacherMode.checked = this.state.teacherMode;
+      this.root.classList.toggle("teacher-mode-enabled", this.state.teacherMode);
       this.elements.displayModeInputs.forEach((input) => {
         input.checked = input.value === this.state.displayMode;
       });
@@ -367,7 +407,8 @@
         focalLengthMm: this.state.focalLengthMm,
         visibility: this.state.visibility,
         displayMode: this.state.displayMode,
-        showGuides: this.state.showGuides
+        showGuides: this.state.showGuides,
+        teacherMode: this.state.teacherMode
       };
     }
 
@@ -389,6 +430,9 @@
       }
       if (typeof parameters.showGuides === "boolean") {
         this.state.showGuides = parameters.showGuides;
+      }
+      if (typeof parameters.teacherMode === "boolean") {
+        this.state.teacherMode = parameters.teacherMode;
       }
 
       this.syncControls();
@@ -524,6 +568,10 @@
       const edgeValues = this.calculatePointValues(edgeRadiusMm, params);
       const sampleValues = this.calculatePointValues(this.getSampleRadius(), params);
       const ringCount = Math.abs(centerValues.fringeOrder - edgeValues.fringeOrder);
+      const phaseFraction = this.getPhaseFraction(centerValues.fringeOrder);
+      const centerState = this.describeCenterState(phaseFraction);
+      const nearestBrightOrder = Math.round(centerValues.fringeOrder);
+      const mirrorStepNm = params.wavelengthNm / 2;
 
       this.setReadout("lambdaMm", wavelengthMm.toFixed(6));
       this.setReadout("focalLength", params.focalLengthMm.toFixed(0));
@@ -535,6 +583,12 @@
       this.setReadout("fringeOrderCenter", centerValues.fringeOrder.toFixed(2));
       this.setReadout("edgeIntensity", edgeValues.intensity.toFixed(3));
       this.setReadout("ringCount", ringCount.toFixed(2));
+      this.setReadout("centerState", centerState);
+      this.setReadout("mirrorStep", mirrorStepNm.toFixed(1));
+      this.setReadout("phasePosition", phaseFraction.toFixed(2));
+      this.setReadout("nearestBrightOrder", String(nearestBrightOrder));
+      this.setReadout("predictionSummary", this.getPredictionSummary(params, ringCount, mirrorStepNm));
+      this.setReadout("misconception", this.getMisconceptionHint(params));
       this.setReadout("sampleRadius", sampleValues.radiusMm.toFixed(2));
       this.setReadout("sampleTheta", sampleValues.thetaDeg.toFixed(2));
       this.setReadout("sampleOpd", sampleValues.opticalPathDifference.toFixed(6));
@@ -547,6 +601,44 @@
       if (element) {
         element.textContent = value;
       }
+    }
+
+    getPhaseFraction(fringeOrder) {
+      return ((fringeOrder % 1) + 1) % 1;
+    }
+
+    describeCenterState(phaseFraction) {
+      const brightDistance = Math.min(phaseFraction, 1 - phaseFraction);
+      const darkDistance = Math.abs(phaseFraction - 0.5);
+
+      if (brightDistance < 0.08) {
+        return "接近亮纹";
+      }
+
+      if (darkDistance < 0.08) {
+        return "接近暗纹";
+      }
+
+      return phaseFraction < 0.5 ? "由亮向暗过渡" : "由暗向亮过渡";
+    }
+
+    getPredictionSummary(params, ringCount, mirrorStepNm) {
+      const wavelengthText = params.wavelengthNm >= 600 ? "红光波长较长，可见环数相对减少" : "波长越短，相同范围内容纳的环数越多";
+      const focalText = params.focalLengthMm > 240 ? "焦距较大时，同一半径对应的倾角较小，条纹更疏" : "焦距较小时，边缘倾角增大，条纹更密";
+
+      return `${wavelengthText}；${focalText}；中心亮暗每改变 d≈${mirrorStepNm.toFixed(1)} nm 循环一次。当前可见环数约 ${ringCount.toFixed(2)}。`;
+    }
+
+    getMisconceptionHint(params) {
+      if (params.visibility < 0.45) {
+        return "可见度 V 只改变亮暗对比度，不会直接改变 λ、d 或 f，也不是条纹半径的根本决定因素。";
+      }
+
+      if (params.focalLengthMm !== DEFAULT_STATE.focalLengthMm) {
+        return "不能把屏幕半径 r 直接当成倾角 θ；本实验中 θ = atan(r/f)，焦距改变会改变同一像素对应的观察方向。";
+      }
+
+      return "亮纹条件不是“光程差越大越亮”，而是 Δ/λ 接近整数时相长，接近半整数时相消。";
     }
 
     addRecord() {
@@ -594,6 +686,83 @@
         `;
         this.elements.measurementBody.appendChild(row);
       });
+    }
+
+    checkQuiz() {
+      const answers = {
+        "q-wavelength": "sparse",
+        "q-center": "phase",
+        "q-visibility": "contrast"
+      };
+      const explanations = {
+        "q-wavelength": "波长增大时，相同光程差对应的相位变化变慢，所以条纹通常变疏、可见环数减少。",
+        "q-center": "中心处 θ = 0，因此 Δ0 = 2d，中心亮暗由 2d 与 λ 的相位关系决定。",
+        "q-visibility": "V 表示条纹对比度。V 降低会让亮纹不那么亮、暗纹不那么暗，但不直接改变光程差。"
+      };
+      let score = 0;
+      const feedback = [];
+
+      Object.entries(answers).forEach(([name, answer], index) => {
+        const selected = document.querySelector(`input[name="${name}"]:checked`);
+
+        if (selected && selected.value === answer) {
+          score += 1;
+          feedback.push(`第 ${index + 1} 题正确。${explanations[name]}`);
+        } else {
+          feedback.push(`第 ${index + 1} 题需要修正。${explanations[name]}`);
+        }
+      });
+
+      this.elements.quizFeedback.textContent = `得分 ${score}/3。${feedback.join(" ")}`;
+      this.elements.quizFeedback.dataset.score = String(score);
+    }
+
+    generateReport() {
+      const params = this.getParameters();
+      const centerValues = this.calculatePointValues(0, params);
+      const edgeValues = this.calculatePointValues(this.canvas.width / 2, params);
+      const sampleValues = this.calculatePointValues(this.getSampleRadius(), params);
+      const phaseFraction = this.getPhaseFraction(centerValues.fringeOrder);
+      const notes = this.elements.observationNotes.value.trim() || "尚未填写课堂观察。";
+      const lines = [
+        "迈克尔逊干涉仪等倾干涉虚拟实验报告",
+        "",
+        `1. 实验参数：λ = ${params.wavelengthNm.toFixed(0)} nm，d = ${params.filmThicknessMm.toFixed(5)} mm，f = ${params.focalLengthMm.toFixed(0)} mm，V = ${(params.visibility * 100).toFixed(0)}%。`,
+        `2. 中心点：Δ0 = ${centerValues.opticalPathDifference.toFixed(6)} mm，Δ0/λ = ${centerValues.fringeOrder.toFixed(2)}，相位位置 = ${phaseFraction.toFixed(2)} 周期，中心状态为“${this.describeCenterState(phaseFraction)}”。`,
+        `3. 边缘点：θe = ${edgeValues.thetaDeg.toFixed(2)}°，Ie = ${edgeValues.intensity.toFixed(3)}。`,
+        `4. 采样点：r = ${sampleValues.radiusMm.toFixed(2)} mm，θ = ${sampleValues.thetaDeg.toFixed(2)}°，I = ${sampleValues.intensity.toFixed(3)}。`,
+        `5. 定性结论：${this.getPredictionSummary(params, Math.abs(centerValues.fringeOrder - edgeValues.fringeOrder), params.wavelengthNm / 2)}`,
+        `6. 课堂观察：${notes}`
+      ];
+
+      if (this.records.length > 0) {
+        lines.push("", `7. 已记录 ${this.records.length} 组数据，可结合 CSV 进行比较。`);
+      }
+
+      if (this.elements.quizFeedback.dataset.score) {
+        lines.push(`8. 概念检测得分：${this.elements.quizFeedback.dataset.score}/3。`);
+      }
+
+      this.elements.reportOutput.value = lines.join("\n");
+      return this.elements.reportOutput.value;
+    }
+
+    async copyReport() {
+      const report = this.elements.reportOutput.value || this.generateReport();
+
+      try {
+        await navigator.clipboard.writeText(report);
+        this.elements.copyStatus.textContent = "报告已复制到剪贴板。";
+      } catch (error) {
+        this.elements.reportOutput.select();
+        document.execCommand("copy");
+        this.elements.copyStatus.textContent = "已尝试复制；如果浏览器拦截，请手动复制文本框内容。";
+      }
+    }
+
+    downloadReport() {
+      const report = this.elements.reportOutput.value || this.generateReport();
+      this.downloadBlob(report, "michelson_interferometer_report.txt", "text/plain");
     }
 
     exportCsv() {
@@ -694,7 +863,8 @@
           focalLengthMm: Number.isFinite(stored.focalLengthMm) ? stored.focalLengthMm : DEFAULT_STATE.focalLengthMm,
           visibility: Number.isFinite(stored.visibility) ? stored.visibility : DEFAULT_STATE.visibility,
           displayMode: stored.displayMode === "gray" ? "gray" : DEFAULT_STATE.displayMode,
-          showGuides: typeof stored.showGuides === "boolean" ? stored.showGuides : DEFAULT_STATE.showGuides
+          showGuides: typeof stored.showGuides === "boolean" ? stored.showGuides : DEFAULT_STATE.showGuides,
+          teacherMode: typeof stored.teacherMode === "boolean" ? stored.teacherMode : DEFAULT_STATE.teacherMode
         };
       } catch (error) {
         return {};
